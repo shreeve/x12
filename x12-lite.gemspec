@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |s|
   s.name        = "x12-lite"
-  s.version     = `grep -m 1 '^\s*VERSION' lib/x12.rb | head -1 | cut -f 2 -d '"'`
+  s.version     = `grep -m 1 '^\s*VERSION' lib/x12-lite.rb | head -1 | cut -f 2 -d '"'`
   s.author      = "Steve Shreeve"
   s.email       = "steve.shreeve@gmail.com"
   s.summary     =  "A " +
