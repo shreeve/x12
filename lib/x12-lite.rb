@@ -367,6 +367,239 @@ class X12
     end
     self
   end
+
+#   def each(seg=nil)
+#     to_a.each do |item|
+#       next if seg && !(seg === item[0])
+#       yield item
+#     end
+#   end
+#
+#   # means this each may change @ary, so clear @str in case
+#   def each!(...)
+#     out = each(...)
+#     @str &&= nil
+#     out
+#   end
+#
+#   def grep(who)
+#     inject([]) do |ary, row|
+#       ary.push(block_given? ? yield(row) : row) if who === row.first
+#       ary
+#     end
+#   end
+#
+#   def now(fmt="%Y%m%d%H%M%S")
+#     Time.now.strftime(fmt)
+#   end
+#
+#   def guid
+#     ("%9.6f" % Time.now.to_f).to_s.sub(".", "")
+#   end
+#
+#   def each_pair
+#     nums = Hash.new(0)
+#     segs = to_a
+#     segs.each_with_index do |flds, i|
+#       seg = flds.first.downcase
+#       num = nums[seg] += 1
+#       msh = seg == "msh"
+#       adj = msh ? 1 : 0
+#       flds.each_with_index do |fld, j|
+#         next if !fld || fld.empty? || j == 0
+#         if !msh and (reps = fld.split(@rep)).size > 1
+#           reps.each_with_index do |set, k|
+#             tag = "#{seg}%s-#{j + adj}(#{k + 1})" % [num > 1 ? "(#{num})" : ""]
+#             yield(tag, set)
+#           end
+#           next
+#         else
+#           tag = "#{seg}%s-#{j + adj}" % [num > 1 ? "(#{num})" : ""]
+#           yield(tag, fld)
+#         end
+#       end
+#     end
+#   end
+#
+#   def to_pairs
+#     ary = []
+#     saw = Hash.new(0)
+#
+#     to_a.each_with_index do |row, i|
+#       seg = row.first.downcase
+#       num = saw[seg] += 1
+#       msh = seg.upcase == "MSH"
+#       adj = msh ? 1 : 0
+#       row.each_with_index do |val, j|
+#         next if val.blank? || j == 0
+#         tag = "#{seg}%s-#{j + adj}" % [num > 1 ? "(#{num})" : ""]
+#         if !msh && val.include?(@rep)
+#           val.split(@rep).each_with_index do |val, k|
+#             ary << [tag + "(#{k + 1})", val] unless val.blank?
+#           end
+#         else
+#           ary << [tag, val]
+#         end
+#       end
+#     end
+#
+#     ary
+#   end
+#
+#   def pluck(row, *ask)
+#     return if ask.empty?
+#
+#     str = (String === row) ? row : row.join(@fld)
+#     say = []
+#
+#     msh = str =~ /^MSH\b/i # is this an MSH segment?
+#
+#     ask.each do |pos|
+#       say.push(nil) && next if pos.nil?
+#       pos = pos.to_s unless pos.is_a?(String)
+#       pos =~ /^([A-Z]..)?(?:\((\d*)\))?[-.]?(\d+)?(?:\((\d*)\))?[-.]?(\d+)?[-.]?(\d+)?$/i
+#       seg = $1 && $1.upcase; raise "asked for a segment of #{seg}, but given #{str}" if (seg && seg != str[0, seg.size].upcase)
+#       num = $2 && $2.to_i; # this will be ignored
+#       fld = $3 && $3.to_i
+#       rep = $4 && $4.to_i
+#       com = $5 && $5.to_i
+#       sub = $6 && $6.to_i
+#
+#       fld -= 1 if msh && fld # MSH fields are offset by one
+#
+#       out = str.dup
+#       out = out.split(@fld)[fld    ] if out && fld
+#       out = out.split(@rep)[rep - 1] if out && rep || (com && (rep ||= 1)) # default to first
+#       out = out.split(@com)[com - 1] if out && com
+#       out = out.split(@sub)[sub - 1] if out && sub
+#       say << (out || "")
+#     end
+#
+#     say.size > 1 ? say : say.first
+#   end
+#
+#   def populate(hash, want)
+#     list = find(*want.values)
+#     keys = want.keys
+#     keys.size == list.size or raise "mismatch (#{keys.size} keys, but #{list.size} values)"
+#     keys.each {|item| hash[item] = list.shift }
+#     hash
+#   end
+#
+#   def glean(want, *rest)
+#     row  = rest.pop           if Array  === rest.last || Hash    === rest.last
+#     want = rest.unshift(want) if String === want      || Numeric === want
+#     want, row = row, want     if Array  === want      && Hash    === row
+#
+#     case row
+#     when Array
+#       case want
+#       when String, Array
+#         vals = pluck(row, *want)
+#       when Hash
+#         keys = want.keys
+#         vals = pluck(row, *want.values)
+#         hash = keys.zip(vals).to_h
+#       else raise "unable to glean X12 segments with #{want.class} types"
+#       end
+#     when nil
+#       case want
+#       when String, Array
+#         vals = find(*want)
+#       when Hash
+#         keys = want.keys
+#         vals = Array(find(*want.values)) # ensure we get an array
+#         hash = keys.zip(vals).to_h
+#       else raise "unable to glean X12 segments with #{want.class} types"
+#       end
+#     else raise "unable to glean X12 objects from #{row.class} types"
+#     end
+#   end
+#
+#   # NOTE: this could be merged with grep()
+#   def slice(who, *ask)
+#     return if ask.empty?
+#
+#     all = ask.map do |pos|
+#       pos.to_s =~ /^([A-Z]..)?(?:\((\d*)\))?[-.]?(\d+)?(?:\((\d*)\))?[-.]?(\d+)?[-.]?(\d+)?$/i
+#       seg = $1 && $1.upcase
+#       num = $2 && $2.to_i; # this will be ignored
+#       fld = $3 && $3.to_i or raise "invalid field specifier in '#{pos}'"
+#       rep = $4 && $4.to_i
+#       com = $5 && $5.to_i
+#       sub = $6 && $6.to_i
+#       [seg, num, fld, rep, com, sub]
+#     end
+#
+#     grep(who).map do |row|
+#       str ||= row[0]
+#       msh ||= str == "msh" # is this an MSH segment?
+#       all.inject([]) do |ary, (seg, num, fld, rep, com, sub)|
+#         raise "scanning #{str} segments, but asked for #{seg}" if (seg && seg != str)
+#         out = row[msh ? fld - 1 : fld].dup
+#         out = out.split(@rep)[rep - 1] if out && rep || (com && (rep ||= 1)) # default to first
+#         out = out.split(@com)[com - 1] if out && com
+#         out = out.split(@sub)[sub - 1] if out && sub
+#         ary << (out || "")
+#       end
+#     end
+#   end
+#
+#   def find(*ask)
+#     return if ask.empty?
+#
+#     str = to_s
+#     say = []
+#
+#     seg = nil
+#
+#     ask.each do |pos|
+#       say.push(nil) && next if pos.nil?
+#       pos = pos.to_s unless pos.is_a?(String)
+#       pos =~ /^([A-Z]..)?(?:\((\d*|\?|\*)\))?[-.]?(\d+)?(?:\((\d*|\?|\*)\))?[-.]?(\d+)?[-.]?(\d+)?$/i or raise "bad query #{pos.inspect}"
+#       seg = $1 if $1; want = /^#{seg}.*/i
+#       num = $2 && $2.to_i; ask_num = $2 == "?"; all_num = $2 == "*"
+#       rep = $4 && $4.to_i; ask_rep = $4 == "?"; all_rep = $4 == "*"
+#       fld = $3 && $3.to_i
+#       com = $5 && $5.to_i
+#       sub = $6 && $6.to_i
+#
+#       # p [seg, num, rep, fld, com, sub]
+#
+#       msh = seg =~ /^MSH$/i # is this an MSH segment?
+#       fld -= 1 if msh && fld # MSH fields are offset by one
+#
+#       if all_num
+#         raise "multi query allows only one selector" if ask.size > 1
+#         return str.scan(want).inject([]) do |ary, out|
+#           out = loop do
+#             out = out.split(@fld)[fld  ] or break if fld
+#             break out.split(@rep).size if ask_rep
+#             out = out.split(@rep)[rep - 1] or break if rep || (com && (rep ||= 1)) # default to first
+#             out = out.split(@com)[com - 1] or break if com
+#             out = out.split(@sub)[sub - 1] or break if sub
+#             break out
+#           end
+#           ary << out if out
+#           ary
+#         end
+#       end
+#
+#       say << loop do
+#         out = ""
+#         break str.scan( want).size if ask_num && !ask_rep
+#         out = str.scan( want)[num - 1] or break "" if num ||= 1 # default to first
+#         out = out.split(@fld)[fld    ] or break "" if fld
+#         break out.split(@rep).size if ask_rep
+#         out = out.split(@rep)[rep - 1] or break "" if rep || (com && (rep ||= 1)) # default to first
+#         out = out.split(@com)[com - 1] or break "" if com
+#         out = out.split(@sub)[sub - 1] or break "" if sub
+#         break out
+#       end
+#     end
+#
+#     say.size > 1 ? say : say.first
+#   end
 end
 
 if __FILE__ == $0
@@ -376,7 +609,12 @@ if __FILE__ == $0
   trap("INT" ) { abort "\n" }
   trap("PIPE") { abort "\n" } rescue nil
 
-  opts = { }
+  opts = {
+    # "lower"   => true,
+    # "ignore"  => true,
+    # "message" => true,
+    # "spacer"  => true,
+  }
 
   OptionParser.new.instance_eval do
     @banner  = "usage: #{program_name} [options] <file> <file> ..."
@@ -384,12 +622,19 @@ if __FILE__ == $0
     on "-a", "--after <date>"  , "After (date as 'YYYYMMDD' or time as 'YYYYMMDD HHMMSS')"
     on "-c", "--count"         , "Count messages at the end"
     on "-d", "--dive"          , "Dive into directories recursively"
+  # on       "--delim <char>"  , "Delimiter to use"
+  # on "-f", "--fields"        , "Show fields"
+  # on "-F", "--fields-only"   , "Show fields only, not repeat indicators"
     on "-h", "--help"          , "Show help and command usage" do Kernel.abort to_s; end
     on "-i", "--ignore"        , "Ignore malformed X12 files"
     on "-l", "--lower"         , "Show segment names in lowercase"
     on "-m", "--message"       , "Show message body"
     on "-p", "--path"          , "Show path for each message"
+  # on "-q", "--query <value>" , "Query a specific value"
+  # on "-r", "--repeats"       , "Show field repeats on their own line"
     on "-s", "--spacer"        , "Show an empty line between messages"
+  # on "-t", "--tsv"           , "Tab-delimit output (tsv format)"
+  # on "-w", "--width  <width>", "Width of segment names", Integer
 
     Kernel.abort to_s if ARGV.empty?
     self
@@ -401,10 +646,19 @@ if __FILE__ == $0
 
   time = Time.parse(opts["after"]) if opts["after"]
   dive = opts["dive"]
+# only = opts["fields-only"] and opts["fields"] = true
+# quer = opts["query"].split(',').map(&:strip) if opts["query"]
+# from = quer.delete("-") if quer.is_a?(Array)
+# delm = opts["tsv"] ? "\t" : (opts["delim"] || "|")
+# delm = {"\\n" => "\n", "\\t" => "\t"}[delm] || delm
 
   args = []
+# args << :deep if  opts["repeats"]
   args << :down if  opts["lower"]
   args << :full if  opts["message"] || opts.empty?
+# args << :hide if !opts["fields"]
+# args << :only if  only
+# args << (opts["width"].to_i.between?(1, 50) ? opts["width"].to_i : 12) if opts["width"]
 
   msgs = 0
 
@@ -450,7 +704,11 @@ if __FILE__ == $0
   list.each do |file|
     puts if opts["spacer"] && msgs > 0
     if opts["path"]
-      puts "\n==[ #{file} ]==\n\n"
+      # if quer && quer.size == 1
+      #   print "#{file}:"
+      # else
+        puts "\n==[ #{file} ]==\n\n"
+      # end
     end
 
     begin
@@ -461,6 +719,13 @@ if __FILE__ == $0
         abort "ERROR: malformed X12 file: \"#{file}\" (#{$!})" unless opts["ignore"]
         next
       end
+    # if quer
+    #   hits = *x12.find(*quer)
+    #   hits.unshift file if opts["path"] || from
+    #   puts hits.join(delm)
+    #   puts if opts["path"]
+    #   next
+    # end
       x12.show(*args)
       msgs += 1
     rescue => e
@@ -472,3 +737,122 @@ if __FILE__ == $0
     puts "\nTotal messages: #{msgs}"
   end
 end
+
+__END__
+
+x12 = X12.new
+
+# fields
+x12["seg"] =  nil
+x12["seg"] =  ""
+x12["seg"] =  "a"
+x12["seg"] =  "a*b"
+x12["seg"] =  "**c*d"
+x12["seg"] =  "**c:e^f*d"
+
+x12["seg"] = [nil                 ]
+x12["seg"] = [""                  ]
+x12["seg"] = ["","","",""         ]
+x12["seg"] = ["a"                 ]
+x12["seg"] = ["a", "b"            ]
+x12["seg"] = ["", "", "c", "d"    ]
+x12["seg"] = ["", "", "c:e^f", "d"]
+x12["seg"] = ["**c:e^f", "d"]
+
+# repeats
+x12["seg-2(3)"] =  "^^c:e^^"
+x12["seg-2(3)"] =  ""
+x12["seg-2(3)"] =  nil
+x12["seg-2(5)"] =  nil
+x12["seg-2(3)"] =  "a"
+x12["seg-2(3)"] =  "a^b"
+x12["seg-2(3)"] =  "^^c^d"
+
+x12["seg-2(3)"] = [nil                 ]
+x12["seg-2(3)"] = [""                  ]
+x12["seg-2(3)"] = ["a"                 ]
+x12["seg-2(3)"] = ["a", "b"            ]
+x12["seg-2(3)"] = ["", "", "c", "d"    ]
+x12["seg-2(3)"] = ["", "", "c:e^f", "d"]
+x12["seg-2(3)"] = ["c:e^f", "d"]
+
+# components
+x12["seg-2(3).1"] =  "c:e"
+x12["seg-2(3).4"] =  ""
+x12["seg-2(3).1"] =  nil
+x12["seg-2(5).4"] =  nil
+x12["seg-2(3).1"] =  "a"
+x12["seg-2(5).2"] =  "a:b"
+x12["seg-2(5).4"] =  "::c:d"
+
+x12["seg-2.1"] = [nil                 ]
+x12["seg-2.4"] = [""                  ]
+x12["seg-2.1"] = ["a"                 ]
+x12["seg-2.4"] = ["a", "b"            ]
+x12["seg-2.1"] = ["", "", "c", "d"    ]
+x12["seg-2.2"] = ["", "", "c:e:f", "d"]
+x12["seg-2.4"] = ["c:e:f", "d"        ]
+
+# p x12.to_a
+
+__END__
+
+position fld rep com
+======== === === ===
+
+# fields
+seg       nil nil nil # replace fields, complete
+seg-1       1 nil nil # replace fields, starting from field 1
+seg-2       2 nil nil # replace fields, starting from field 2
+
+# repeats
+seg-1(1)    1   1 nil # replace repeats for field 1, starting from repeat 1
+seg-1(3)    1   3 nil # replace repeats for field 1, starting from repeat 3
+seg-2(1)    2   1 nil # replace repeats for field 2, starting from repeat 1
+seg-2(3)    2   3 nil # replace repeats for field 2, starting from repeat 3
+
+# components
+seg-1.1     1 nil   1 # replace components for field 1, starting from component 1
+seg-1.4     1 nil   4 # replace components for field 1, starting from component 4
+seg-2.1     2 nil   1 # replace components for field 2, starting from component 1
+seg-2.4     2 nil   4 # replace components for field 2, starting from component 4
+seg-1(1).1  1   1   1 # replace components for field 1, repeat 1, starting from component 1
+seg-1(1).4  1   1   4 # replace components for field 1, repeat 1, starting from component 4
+seg-2(1).1  2   1   1 # replace components for field 2, repeat 1, starting from component 1
+seg-2(1).4  2   1   4 # replace components for field 2, repeat 1, starting from component 4
+seg-1(3).1  1   3   1 # replace components for field 1, repeat 3, starting from component 1
+seg-1(3).4  1   3   4 # replace components for field 1, repeat 3, starting from component 4
+seg-2(3).1  2   3   1 # replace components for field 2, repeat 3, starting from component 1
+seg-2(3).4  2   3   4 # replace components for field 2, repeat 3, starting from component 4
+
+x12 = X12.new [
+  "gs-2", "...",
+  "gs-8", "...",
+  "foo", "wow",
+]
+
+x12 = X12.new <<~""
+  ISA*00*          *00*          *ZZ*HT009382-001   *ZZ*HT000004-001   *240626*0906*^*00501*000923871*0*P*:~
+  GS*HS*HT009382-001*HT000004-001*20240626*0906*923871*X*005010X279A1~
+
+x12.show(:down)
+
+__END__
+
+class DefaultArray < Array
+  def initialize(default_value = nil)
+    @default_value = default_value
+    super()
+  end
+
+  def [](index)
+    self[index] = @default_value if index >= size
+    super
+  end
+end
+
+# Usage
+arr = DefaultArray.new(0)  # Create a new array with default value 0
+
+puts arr[2]  # => 0 (accessing non-existent element sets it to default 0)
+puts arr.inspect  # => [0, 0, 0] (array is now filled with default values)

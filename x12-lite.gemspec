@@ -1,13 +1,13 @@
 # encoding: utf-8
 
 Gem::Specification.new do |s|
-  s.name        = "x12"
+  s.name        = "x12-lite"
   s.version     = `grep -m 1 '^\s*VERSION' lib/x12.rb | head -1 | cut -f 2 -d '"'`
   s.author      = "Steve Shreeve"
   s.email       = "steve.shreeve@gmail.com"
   s.summary     =  "A " +
   s.description = "Ruby gem to parse and generate X.12 transactions"
-  s.homepage    = "https://github.com/shreeve/x12"
+  s.homepage    = "https://github.com/shreeve/x12-lite"
   s.license     = "MIT"
   s.platform    = Gem::Platform::RUBY
   s.files       = `git ls-files`.split("\n") - %w[.gitignore]
