@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 # ==============================================================================
-# x12.rb: X12 library for Ruby
+# x12-lite.rb: X12 library for Ruby
 #
 # Author: Steve Shreeve <steve.shreeve@trusthealth.com>
 #   Date: October 7, 2024
@@ -45,7 +45,7 @@ end
 # ==[ X12 ]=====================================================================
 
 class X12
-  VERSION="0.1.0"
+  VERSION="0.2.0"
 
   include Enumerable
 
