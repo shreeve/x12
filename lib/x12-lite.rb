@@ -3,7 +3,7 @@
 # ==============================================================================
 # x12-lite.rb: X12 library for Ruby
 #
-# Author: Steve Shreeve <steve.shreeve@trusthealth.com>
+# Author: Steve Shreeve <steve.shreeve@gmail.com>
 #   Date: October 7, 2024
 #
 #  Legal: All rights reserved.
@@ -45,7 +45,7 @@ end
 # ==[ X12 ]=====================================================================
 
 class X12
-  VERSION="0.2.1"
+  VERSION="0.3.0"
 
   include Enumerable
 
@@ -600,142 +600,6 @@ class X12
 #
 #     say.size > 1 ? say : say.first
 #   end
-end
-
-if __FILE__ == $0
-
-  require "optparse"
-
-  trap("INT" ) { abort "\n" }
-  trap("PIPE") { abort "\n" } rescue nil
-
-  opts = {
-    # "lower"   => true,
-    # "ignore"  => true,
-    # "message" => true,
-    # "spacer"  => true,
-  }
-
-  OptionParser.new.instance_eval do
-    @banner  = "usage: #{program_name} [options] <file> <file> ..."
-
-    on "-a", "--after <date>"  , "After (date as 'YYYYMMDD' or time as 'YYYYMMDD HHMMSS')"
-    on "-c", "--count"         , "Count messages at the end"
-    on "-d", "--dive"          , "Dive into directories recursively"
-  # on       "--delim <char>"  , "Delimiter to use"
-  # on "-f", "--fields"        , "Show fields"
-  # on "-F", "--fields-only"   , "Show fields only, not repeat indicators"
-    on "-h", "--help"          , "Show help and command usage" do Kernel.abort to_s; end
-    on "-i", "--ignore"        , "Ignore malformed X12 files"
-    on "-l", "--lower"         , "Show segment names in lowercase"
-    on "-m", "--message"       , "Show message body"
-    on "-p", "--path"          , "Show path for each message"
-  # on "-q", "--query <value>" , "Query a specific value"
-  # on "-r", "--repeats"       , "Show field repeats on their own line"
-    on "-s", "--spacer"        , "Show an empty line between messages"
-  # on "-t", "--tsv"           , "Tab-delimit output (tsv format)"
-  # on "-w", "--width  <width>", "Width of segment names", Integer
-
-    Kernel.abort to_s if ARGV.empty?
-    self
-  end.parse!(into: opts) rescue abort($!.message)
-
-  opts.transform_keys!(&:to_s) # stringify keys
-
-  require "time" if opts["after"]
-
-  time = Time.parse(opts["after"]) if opts["after"]
-  dive = opts["dive"]
-# only = opts["fields-only"] and opts["fields"] = true
-# quer = opts["query"].split(',').map(&:strip) if opts["query"]
-# from = quer.delete("-") if quer.is_a?(Array)
-# delm = opts["tsv"] ? "\t" : (opts["delim"] || "|")
-# delm = {"\\n" => "\n", "\\t" => "\t"}[delm] || delm
-
-  args = []
-# args << :deep if  opts["repeats"]
-  args << :down if  opts["lower"]
-  args << :full if  opts["message"] || opts.empty?
-# args << :hide if !opts["fields"]
-# args << :only if  only
-# args << (opts["width"].to_i.between?(1, 50) ? opts["width"].to_i : 12) if opts["width"]
-
-  msgs = 0
-
-  list = []
-  ARGV.push(".") if dive && ARGV.empty?
-  ARGV.each do |path|
-    if File.directory?(path)
-      ours = []
-      if dive
-        Find.find(path) do |item|
-          if File.file?(item)
-            if time
-              ours << item if File.mtime(item) > time
-            else
-              ours << item
-            end
-          end
-        end
-      else
-        Dir[File.join(path, "*")].each do |item|
-          if File.file?(item)
-            if time
-              ours << item if File.mtime(item) > time
-            else
-              ours << item
-            end
-          end
-        end
-      end
-      list.concat(ours.sort!)
-    elsif File.file?(path)
-      if time
-        list << path if File.mtime(path) > time
-      else
-        list << path
-      end
-    else
-      warn "WARNING: unknown item in list: #{path.inspect}"
-      next
-    end
-  end
-
-  list.each do |file|
-    puts if opts["spacer"] && msgs > 0
-    if opts["path"]
-      # if quer && quer.size == 1
-      #   print "#{file}:"
-      # else
-        puts "\n==[ #{file} ]==\n\n"
-      # end
-    end
-
-    begin
-      str = File.open(file, "r:bom|utf-8", &:read) rescue abort("ERROR: unable to read file: \"#{file}\"")
-      begin
-        x12 = X12.new(str)
-      rescue
-        abort "ERROR: malformed X12 file: \"#{file}\" (#{$!})" unless opts["ignore"]
-        next
-      end
-    # if quer
-    #   hits = *x12.find(*quer)
-    #   hits.unshift file if opts["path"] || from
-    #   puts hits.join(delm)
-    #   puts if opts["path"]
-    #   next
-    # end
-      x12.show(*args)
-      msgs += 1
-    rescue => e
-      warn "WARNING: #{e.message}"
-    end
-  end
-
-  if opts["count"] && msgs > 0
-    puts "\nTotal messages: #{msgs}"
-  end
 end
 
 __END__
