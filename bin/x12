@@ -40,6 +40,7 @@ OptionParser.new.instance_eval do
 # on "-r", "--repeats"       , "Show field repeats on their own line"
   on "-s", "--spacer"        , "Show an empty line between messages"
 # on "-t", "--tsv"           , "Tab-delimit output (tsv format)"
+  on "-v", "--version"       , "Show version" do abort "v#{::X12::VERSION}"; end
 # on "-w", "--width  <width>", "Width of segment names", Integer
 
   Kernel.abort to_s if ARGV.empty?
