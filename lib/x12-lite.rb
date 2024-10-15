@@ -183,7 +183,7 @@ class X12
             end
           end
           tag = "#{seg}%s-#{j}" % [num > 1 && !only ? "(#{num})" : ""]
-          out << (tag.ljust(left) + wrap(fld, "fff", "369"))
+          out << (tag.ljust(left) + ansi(fld, "fff", "369"))
         end
       end
     end
