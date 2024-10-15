@@ -45,7 +45,7 @@ end
 # ==[ X12 ]=====================================================================
 
 class X12
-  VERSION="0.3.1"
+  VERSION="0.3.2"
 
   include Enumerable
 
@@ -368,27 +368,27 @@ class X12
     self
   end
 
-#   def each(seg=nil)
-#     to_a.each do |item|
-#       next if seg && !(seg === item[0])
-#       yield item
-#     end
-#   end
-#
-#   # means this each may change @ary, so clear @str in case
-#   def each!(...)
-#     out = each(...)
-#     @str &&= nil
-#     out
-#   end
-#
-#   def grep(who)
-#     inject([]) do |ary, row|
-#       ary.push(block_given? ? yield(row) : row) if who === row.first
-#       ary
-#     end
-#   end
-#
+  def each(seg=nil)
+    to_a.each do |row|
+      next if seg && !(seg === row.first)
+      yield row
+    end
+  end
+
+  # means this each may change @ary, so clear @str in case
+  def each!(...)
+    out = each(...)
+    @str &&= nil
+    out
+  end
+
+  def grep(seg)
+    reduce([]) do |ary, row|
+      ary.push(block_given? ? yield(row) : row) if seg === row.first
+      ary
+    end
+  end
+
 #   def now(fmt="%Y%m%d%H%M%S")
 #     Time.now.strftime(fmt)
 #   end
