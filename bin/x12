@@ -29,8 +29,8 @@ OptionParser.new.instance_eval do
   on "-c", "--count"         , "Count messages at the end"
   on "-d", "--dive"          , "Dive into directories recursively"
 # on       "--delim <char>"  , "Delimiter to use"
-# on "-f", "--fields"        , "Show fields"
-# on "-F", "--fields-only"   , "Show fields only, not repeat indicators"
+  on "-f", "--fields"        , "Show fields"
+  on "-F", "--fields-only"   , "Show fields only, not repeat indicators"
   on "-h", "--help"          , "Show help and command usage" do Kernel.abort to_s; end
   on "-i", "--ignore"        , "Ignore malformed X12 files"
   on "-l", "--lower"         , "Show segment names in lowercase"
@@ -53,7 +53,7 @@ require "time" if opts["after"]
 
 time = Time.parse(opts["after"]) if opts["after"]
 dive = opts["dive"]
-# only = opts["fields-only"] and opts["fields"] = true
+only = opts["fields-only"] and opts["fields"] = true
 # quer = opts["query"].split(',').map(&:strip) if opts["query"]
 # from = quer.delete("-") if quer.is_a?(Array)
 # delm = opts["tsv"] ? "\t" : (opts["delim"] || "|")
@@ -63,8 +63,8 @@ args = []
 # args << :deep if  opts["repeats"]
 args << :down if  opts["lower"]
 args << :full if  opts["message"] || opts.empty?
-# args << :hide if !opts["fields"]
-# args << :only if  only
+args << :hide if !opts["fields"]
+args << :only if  only
 # args << (opts["width"].to_i.between?(1, 50) ? opts["width"].to_i : 12) if opts["width"]
 
 msgs = 0

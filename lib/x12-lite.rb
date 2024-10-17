@@ -4,7 +4,7 @@
 # x12-lite.rb: X12 library for Ruby
 #
 # Author: Steve Shreeve <steve.shreeve@gmail.com>
-#   Date: October 7, 2024
+#   Date: October 16, 2024
 #
 #  Legal: All rights reserved.
 # ==============================================================================
@@ -45,7 +45,7 @@ end
 # ==[ X12 ]=====================================================================
 
 class X12
-  VERSION="0.3.3"
+  VERSION="0.3.4"
 
   include Enumerable
 
