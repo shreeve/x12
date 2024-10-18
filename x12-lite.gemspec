@@ -5,7 +5,7 @@ Gem::Specification.new do |gem|
   gem.version     = `grep -m 1 '^\s*VERSION' lib/x12-lite.rb | head -1 | cut -f 2 -d '"'`
   gem.author      = "Steve Shreeve"
   gem.email       = "steve.shreeve@gmail.com"
-  gem.summary     =  "A " +
+  gem.summary     = "A lightweight Ruby gem to parse and generate X.12 transactions"
   gem.description = "Ruby gem to parse and generate X.12 transactions"
   gem.homepage    = "https://github.com/shreeve/x12-lite"
   gem.license     = "MIT"
