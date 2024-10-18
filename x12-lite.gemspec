@@ -12,6 +12,6 @@ Gem::Specification.new do |gem|
   gem.platform    = Gem::Platform::RUBY
   gem.files       = `git ls-files`.split("\n") - %w[.gitignore]
   gem.executables = `cd bin && git ls-files .`.split("\n")
-  gem.required_ruby_version = Gem::Requirement.new(">= 3.0") if s.respond_to? :required_ruby_version=
+  gem.required_ruby_version = Gem::Requirement.new(">= 3.0") if gem.respond_to? :required_ruby_version=
 # gem.add_dependency "nokogiri"
 end
