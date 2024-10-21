@@ -37,10 +37,10 @@ OptionParser.new.instance_eval do
   on "-l", "--lower"         , "Show segment names in lowercase"
   on "-m", "--message"       , "Show message body"
   on "-p", "--path"          , "Show path for each message"
-# on "-q", "--query <value>" , "Query a specific value"
+  on "-q", "--query <value>" , "Query a specific value"
 # on "-r", "--repeats"       , "Show field repeats on their own line"
   on "-s", "--spacer"        , "Show an empty line between messages"
-# on "-t", "--tsv"           , "Tab-delimit output (tsv format)"
+  on "-t", "--tsv"           , "Tab-delimit output (tsv format)"
   on "-v", "--version"       , "Show version" do abort "v#{::X12::VERSION}"; end
 # on "-w", "--width  <width>", "Width of segment names", Integer
 
@@ -55,10 +55,10 @@ require "time" if opts["after"]
 time = Time.parse(opts["after"]) if opts["after"]
 dive = opts["dive"]
 only = opts["fields-only"] and opts["fields"] = true
-# quer = opts["query"].split(',').map(&:strip) if opts["query"]
-# from = quer.delete("-") if quer.is_a?(Array)
-# delm = opts["tsv"] ? "\t" : (opts["delim"] || "|")
-# delm = {"\\n" => "\n", "\\t" => "\t"}[delm] || delm
+quer = opts["query"].split(',').map(&:strip) if opts["query"]
+from = quer.delete("-") if quer.is_a?(Array)
+seps = opts["tsv"] ? "\t" : (opts["delim"] || "|")
+seps = {"\\n" => "\n", "\\t" => "\t"}[seps] || seps
 
 args = []
 # args << :deep if  opts["repeats"]
@@ -128,13 +128,13 @@ list.each do |file|
       abort "ERROR: malformed X12 file: \"#{file}\" (#{$!})" unless opts["ignore"]
       next
     end
-  # if quer
-  #   hits = *x12.find(*quer)
-  #   hits.unshift file if opts["path"] || from
-  #   puts hits.join(delm)
-  #   puts if opts["path"]
-  #   next
-  # end
+    if quer
+      hits = *x12.find(*quer)
+      hits.unshift file if opts["path"] || from
+      puts hits.join(seps)
+      puts if opts["path"]
+      next
+    end
     x12.show(*args)
     msgs += 1
   rescue => e
