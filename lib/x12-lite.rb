@@ -164,7 +164,7 @@ class X12
     full = opts.include?(:full) # show body at top
     deep = opts.include?(:deep) # dive into repeats
     down = opts.include?(:down) # show segments in lowercase
-    list = opts.include?(:list) # give back a list or print it
+    list = opts.include?(:list) # puts output or return a list
     hide = opts.include?(:hide) # hide output
     only = opts.include?(:only) # only show first of each segment type
     ansi = opts.include?(:ansi) # highlight data using ansi color codes
