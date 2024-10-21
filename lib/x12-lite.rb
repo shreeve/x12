@@ -398,6 +398,51 @@ class X12
     end
   end
 
+  def find(*ask)
+    return if ask.empty?
+
+    str = to_s
+    say = []
+
+    ask.each do |pos|
+      say.push(nil) && next if pos.nil?
+      pos =~ REGEX or raise "bad selector '#{pos}'"
+      seg = $1; want = /^#{seg}[^#{Regexp.escape(@seg)}\r\n]*/i
+      num = $2 && $2.to_i; new_num = $2 == "+"; ask_num = $2 == "?"; all_num = $2 == "*"
+      rep = $4 && $4.to_i; new_rep = $4 == "+"; ask_rep = $4 == "?"; all_rep = $4 == "*"
+      fld = $3 && $3.to_i; len > 1 && fld == 0 and raise "zero index on field"
+      com = $5 && $5.to_i; len > 1 && com == 0 and raise "zero index on component"
+
+      if all_num
+        raise "multi query allows only one selector" if ask.size > 1
+        return str.scan(want).inject([]) do |ary, out|
+          out = loop do
+            out = out.split(@fld)[fld  ] or break if fld
+            break out.split(@rep).size if ask_rep
+            out = out.split(@rep)[rep - 1] or break if rep || (com && (rep ||= 1))
+            out = out.split(@com)[com - 1] or break if com
+            break out
+          end
+          ary << out if out
+          ary
+        end
+      end
+
+      say << loop do
+        out = ""
+        break str.scan( want).size if ask_num && !ask_rep
+        out = str.scan( want)[num - 1] or break "" if num ||= 1
+        out = out.split(@fld)[fld    ] or break "" if fld
+        break out.split(@rep).size if ask_rep
+        out = out.split(@rep)[rep - 1] or break "" if rep || (com && (rep ||= 1))
+        out = out.split(@com)[com - 1] or break "" if com
+        break out
+      end
+    end
+
+    say.size > 1 ? say : say.first
+  end
+
 #   def now(fmt="%Y%m%d%H%M%S")
 #     Time.now.strftime(fmt)
 #   end
@@ -553,51 +598,6 @@ class X12
 #       end
 #     end
 #   end
-
-  def find(*ask)
-    return if ask.empty?
-
-    str = to_s
-    say = []
-
-    ask.each do |pos|
-      say.push(nil) && next if pos.nil?
-      pos =~ REGEX or raise "bad selector '#{pos}'"
-      seg = $1; want = /^#{seg}[^#{Regexp.escape(@seg)}\r\n]*/i
-      num = $2 && $2.to_i; new_num = $2 == "+"; ask_num = $2 == "?"; all_num = $2 == "*"
-      rep = $4 && $4.to_i; new_rep = $4 == "+"; ask_rep = $4 == "?"; all_rep = $4 == "*"
-      fld = $3 && $3.to_i; len > 1 && fld == 0 and raise "zero index on field"
-      com = $5 && $5.to_i; len > 1 && com == 0 and raise "zero index on component"
-
-      if all_num
-        raise "multi query allows only one selector" if ask.size > 1
-        return str.scan(want).inject([]) do |ary, out|
-          out = loop do
-            out = out.split(@fld)[fld  ] or break if fld
-            break out.split(@rep).size if ask_rep
-            out = out.split(@rep)[rep - 1] or break if rep || (com && (rep ||= 1))
-            out = out.split(@com)[com - 1] or break if com
-            break out
-          end
-          ary << out if out
-          ary
-        end
-      end
-
-      say << loop do
-        out = ""
-        break str.scan( want).size if ask_num && !ask_rep
-        out = str.scan( want)[num - 1] or break "" if num ||= 1
-        out = out.split(@fld)[fld    ] or break "" if fld
-        break out.split(@rep).size if ask_rep
-        out = out.split(@rep)[rep - 1] or break "" if rep || (com && (rep ||= 1))
-        out = out.split(@com)[com - 1] or break "" if com
-        break out
-      end
-    end
-
-    say.size > 1 ? say : say.first
-  end
 end
 
 __END__
