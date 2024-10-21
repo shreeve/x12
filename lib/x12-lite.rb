@@ -224,8 +224,8 @@ class X12
     val = args[1]
 
     # Syntax: seg(num)-fld(rep).com
-    pos =~ /^(..[^-.(]?)?(?:\((\d*|[+!?*]?)\))?[-.]?(\d+)?(?:\((\d*|[+!?*]?)\))?[-.]?(\d+)?$/
-    seg = $1 or return ""; want = /^#{seg}[^#{Regexp.escape(@seg)}\r\n]*/i
+    pos =~ REGEX or raise "bad selector '#{pos}'"
+    seg = $1; want = /^#{seg}[^#{Regexp.escape(@seg)}\r\n]*/i
     num = $2 && $2.to_i; new_num = $2 == "+"; ask_num = $2 == "?"; all_num = $2 == "*"
     rep = $4 && $4.to_i; new_rep = $4 == "+"; ask_rep = $4 == "?"; all_rep = $4 == "*"
     fld = $3 && $3.to_i; len > 1 && fld == 0 and raise "zero index on field"
