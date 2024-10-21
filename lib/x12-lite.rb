@@ -544,62 +544,62 @@ class X12
 #       end
 #     end
 #   end
-#
-#   def find(*ask)
-#     return if ask.empty?
-#
-#     str = to_s
-#     say = []
-#
-#     seg = nil
-#
-#     ask.each do |pos|
-#       say.push(nil) && next if pos.nil?
-#       pos = pos.to_s unless pos.is_a?(String)
-#       pos =~ /^([A-Z]..)?(?:\((\d*|\?|\*)\))?[-.]?(\d+)?(?:\((\d*|\?|\*)\))?[-.]?(\d+)?[-.]?(\d+)?$/i or raise "bad query #{pos.inspect}"
-#       seg = $1 if $1; want = /^#{seg}.*/i
-#       num = $2 && $2.to_i; ask_num = $2 == "?"; all_num = $2 == "*"
-#       rep = $4 && $4.to_i; ask_rep = $4 == "?"; all_rep = $4 == "*"
-#       fld = $3 && $3.to_i
-#       com = $5 && $5.to_i
-#       sub = $6 && $6.to_i
-#
-#       # p [seg, num, rep, fld, com, sub]
-#
-#       msh = seg =~ /^MSH$/i # is this an MSH segment?
-#       fld -= 1 if msh && fld # MSH fields are offset by one
-#
-#       if all_num
-#         raise "multi query allows only one selector" if ask.size > 1
-#         return str.scan(want).inject([]) do |ary, out|
-#           out = loop do
-#             out = out.split(@fld)[fld  ] or break if fld
-#             break out.split(@rep).size if ask_rep
-#             out = out.split(@rep)[rep - 1] or break if rep || (com && (rep ||= 1)) # default to first
-#             out = out.split(@com)[com - 1] or break if com
-#             out = out.split(@sub)[sub - 1] or break if sub
-#             break out
-#           end
-#           ary << out if out
-#           ary
-#         end
-#       end
-#
-#       say << loop do
-#         out = ""
-#         break str.scan( want).size if ask_num && !ask_rep
-#         out = str.scan( want)[num - 1] or break "" if num ||= 1 # default to first
-#         out = out.split(@fld)[fld    ] or break "" if fld
-#         break out.split(@rep).size if ask_rep
-#         out = out.split(@rep)[rep - 1] or break "" if rep || (com && (rep ||= 1)) # default to first
-#         out = out.split(@com)[com - 1] or break "" if com
-#         out = out.split(@sub)[sub - 1] or break "" if sub
-#         break out
-#       end
-#     end
-#
-#     say.size > 1 ? say : say.first
-#   end
+
+  def find(*ask)
+    return if ask.empty?
+
+    str = to_s
+    say = []
+
+    seg = nil
+
+    ask.each do |pos|
+      say.push(nil) && next if pos.nil?
+      pos = pos.to_s unless pos.is_a?(String)
+      pos =~ /^([A-Z]..)?(?:\((\d*|\?|\*)\))?[-.]?(\d+)?(?:\((\d*|\?|\*)\))?[-.]?(\d+)?[-.]?(\d+)?$/i or raise "bad query #{pos.inspect}"
+      seg = $1 if $1; want = /^#{seg}.*/i
+      num = $2 && $2.to_i; ask_num = $2 == "?"; all_num = $2 == "*"
+      rep = $4 && $4.to_i; ask_rep = $4 == "?"; all_rep = $4 == "*"
+      fld = $3 && $3.to_i
+      com = $5 && $5.to_i
+      sub = $6 && $6.to_i
+
+      # p [seg, num, rep, fld, com, sub]
+
+      msh = seg =~ /^MSH$/i # is this an MSH segment?
+      fld -= 1 if msh && fld # MSH fields are offset by one
+
+      if all_num
+        raise "multi query allows only one selector" if ask.size > 1
+        return str.scan(want).inject([]) do |ary, out|
+          out = loop do
+            out = out.split(@fld)[fld  ] or break if fld
+            break out.split(@rep).size if ask_rep
+            out = out.split(@rep)[rep - 1] or break if rep || (com && (rep ||= 1)) # default to first
+            out = out.split(@com)[com - 1] or break if com
+            out = out.split(@sub)[sub - 1] or break if sub
+            break out
+          end
+          ary << out if out
+          ary
+        end
+      end
+
+      say << loop do
+        out = ""
+        break str.scan( want).size if ask_num && !ask_rep
+        out = str.scan( want)[num - 1] or break "" if num ||= 1 # default to first
+        out = out.split(@fld)[fld    ] or break "" if fld
+        break out.split(@rep).size if ask_rep
+        out = out.split(@rep)[rep - 1] or break "" if rep || (com && (rep ||= 1)) # default to first
+        out = out.split(@com)[com - 1] or break "" if com
+        out = out.split(@sub)[sub - 1] or break "" if sub
+        break out
+      end
+    end
+
+    say.size > 1 ? say : say.first
+  end
 end
 
 __END__
