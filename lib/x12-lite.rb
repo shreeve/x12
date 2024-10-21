@@ -45,7 +45,7 @@ end
 # ==[ X12 ]=====================================================================
 
 class X12
-  VERSION="0.4.0"
+  VERSION="0.4.1"
 
   include Enumerable
 
@@ -410,8 +410,8 @@ class X12
       seg = $1; want = /^#{seg}[^#{Regexp.escape(@seg)}\r\n]*/i
       num = $2 && $2.to_i; new_num = $2 == "+"; ask_num = $2 == "?"; all_num = $2 == "*"
       rep = $4 && $4.to_i; new_rep = $4 == "+"; ask_rep = $4 == "?"; all_rep = $4 == "*"
-      fld = $3 && $3.to_i; len > 1 && fld == 0 and raise "zero index on field"
-      com = $5 && $5.to_i; len > 1 && com == 0 and raise "zero index on component"
+      fld = $3 && $3.to_i
+      com = $5 && $5.to_i
 
       if all_num
         raise "multi query allows only one selector" if ask.size > 1
