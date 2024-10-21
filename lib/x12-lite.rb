@@ -167,6 +167,7 @@ class X12
     list = opts.include?(:list) # give back a list or print it
     hide = opts.include?(:hide) # hide output
     only = opts.include?(:only) # only show first of each segment type
+    ansi = opts.include?(:ansi) # highlight data using ansi color codes
     left = opts.grep(Integer).first || 15 # left justify size
 
     out = full ? [to_s] : []
@@ -191,7 +192,7 @@ class X12
             end
           end
           tag = "#{seg}%s-#{j}" % [num > 1 && !only ? "(#{num})" : ""]
-          out << (tag.ljust(left) + ansi(fld, "fff", "369"))
+          out << (tag.ljust(left) + (ansi ? ansi(fld, "fff", "369") : fld))
         end
       end
     end

@@ -26,6 +26,7 @@ OptionParser.new.instance_eval do
   @banner  = "usage: #{program_name} [options] <file> <file> ..."
 
   on "-a", "--after <date>"  , "After (date as 'YYYYMMDD' or time as 'YYYYMMDD HHMMSS')"
+  on       "--ansi"          , "Use ANSI color codes to display values"
   on "-c", "--count"         , "Count messages at the end"
   on "-d", "--dive"          , "Dive into directories recursively"
 # on       "--delim <char>"  , "Delimiter to use"
@@ -61,6 +62,7 @@ only = opts["fields-only"] and opts["fields"] = true
 
 args = []
 # args << :deep if  opts["repeats"]
+args << :ansi if  opts["ansi"]
 args << :down if  opts["lower"]
 args << :full if  opts["message"] || opts.empty?
 args << :hide if !opts["fields"]
